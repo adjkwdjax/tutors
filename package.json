@@ -9,17 +9,36 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@mantine/core": "^8.3.17",
+    "@mantine/dates": "^8.3.17",
+    "@mantine/dropzone": "^8.3.17",
+    "@mantine/form": "^8.3.17",
+    "@mantine/hooks": "^8.3.17",
+    "@mantine/modals": "^8.3.17",
+    "@mantine/notifications": "^8.3.17",
+    "@mantine/tiptap": "^8.3.17",
+    "@tiptap/extension-link": "^3.20.2",
+    "@tiptap/pm": "^3.20.2",
+    "@tiptap/react": "^3.20.2",
+    "@tiptap/starter-kit": "^3.20.2",
+    "cookies-next": "^6.1.1",
+    "dayjs": "^1.11.20",
     "next": "16.1.6",
+    "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "postcss": "^8.5.8",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
