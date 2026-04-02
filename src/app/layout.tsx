@@ -1,6 +1,10 @@
 // Import styles of packages that you've installed.
 // All packages except `@mantine/hooks` require styles imports
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+
+import { Notifications } from '@mantine/notifications';
+
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from './authProvider';
@@ -29,7 +33,10 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider>
+          <Notifications />
+          {children}
+        </MantineProvider>
         </AuthProvider>
       </body>
     </html>

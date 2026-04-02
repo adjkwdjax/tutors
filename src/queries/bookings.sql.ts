@@ -12,3 +12,21 @@ export const GET_BOOKINGS_BY_TUTOR_IDS = `
     LEFT JOIN tutors t ON b.tutor_id = t.tutor_id
     WHERE b.tutor_id = ANY($1::int[])
 `;
+
+export const CANCEL_BOOKING = `
+  UPDATE bookings
+    SET status = 'cancelled'::booking_status,
+        cancellation_reason = $3,
+        cancelled_at = NOW(),
+        cancelled_by_role = $4::user_role,
+        cancelled_by_student_id = CASE
+          WHEN $4::user_role = 'student'::user_role THEN $2::int
+          ELSE NULL
+        END,
+        cancelled_by_tutor_id = CASE
+          WHEN $4::user_role = 'tutor'::user_role THEN $2::int
+          ELSE NULL
+        END
+    WHERE booking_id = $1
+    RETURNING booking_id AS slot_id, student_id, tutor_id, status, price, comment_tutor, comment_student;
+`;

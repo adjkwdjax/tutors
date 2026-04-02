@@ -1,7 +1,6 @@
 // в этом файле мы только получаем и отдаем данные, никаких бизнес логик, валидаций и тд не должно быть, только вызов функции и отдача данных
 
 import { NextResponse } from 'next/server'
-import { pool } from '../../../lib/db'
 
 import { getBookingsByTutorIds, addBooking } from '@/src/services/booking.service';
 

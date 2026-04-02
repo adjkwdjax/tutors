@@ -24,11 +24,10 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
 
   return (
     <div>
-    <Modal opened={opened} onClose={onClose} title='Student modal'>
-      <p className='mb-3 text-sm text-slate-700'>role: student</p>
+    <Modal opened={opened} onClose={onClose} title='Забронировать слот'>
       <p className='mb-4 text-sm text-slate-800'>
         {time
-          ? `Вы выбрали слот на ${time.toDateString()}. Для бронирования свяжитесь с вашим репетитором.`
+          ? `Вы выбрали слот на ${time.toLocaleString()}. Для бронирования свяжитесь с вашим репетитором.` // красиво вывести дату и время
           : 'Слот не выбран'}
       </p>
       {slotId != null && <p className='mb-4 text-sm text-slate-800'>ID слота: {slotId}</p>}
@@ -48,12 +47,7 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
         )}
       </div>
     </Modal>
-    <CancellationModal opened={cancellationModalOpened} onClose={() => setCancellationModalOpened(false)} onCancellation={(slotId) => {
-      if (onDelete) {
-        onDelete(slotId);
-      }
-      setCancellationModalOpened(false);
-    }} slotId={slotId} />
+    <CancellationModal closeModals={onClose} opened={cancellationModalOpened} onClose={() => setCancellationModalOpened(false)} slotId={slotId} />
     </div>
   );
 }

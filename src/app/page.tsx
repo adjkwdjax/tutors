@@ -4,7 +4,6 @@ import CalendarView from './components/calendar';
 import TutorsListPanelView from './components/tutors-list-panel'
 import { AuthModal } from './components/auth-modal';
 import { useAuth } from './authProvider';
-
 import './globals.css';
 
 export default function Home() {

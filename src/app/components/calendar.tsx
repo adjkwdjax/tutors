@@ -5,6 +5,7 @@ import { ScrollArea, Loader, Pill } from '@mantine/core';
 import { useAuth } from '../authProvider';
 import { StudentSlotModal } from '@/src/app/components/student-slot-modal';
 import { TutorSlotModal } from '@/src/app/components/tutor-slot-modal';
+import { Notifications } from '@mantine/notifications';
 
 import { Tutor } from '@/src/services/calendar.service';
 
@@ -37,6 +38,7 @@ const CalendarView = memo(function CalendarView() {
     setStudentModalOpened(false);
     setTutorModalOpened(false);
     setSelectedSlot(null);
+    loadSlots(false);
   };
 
   const onBook = (slotId: number, studentId: number) => {
@@ -48,6 +50,7 @@ const CalendarView = memo(function CalendarView() {
       body: JSON.stringify({ slotId, studentId }),
     })
     closeModals();
+    Notifications.show({ title: 'Бронирование', message: 'Слот успешно создан', color: 'green', autoClose: 4000, position: 'top-right' });
     setTimeout(() => {
       loadSlots(false);
     }, 500);
