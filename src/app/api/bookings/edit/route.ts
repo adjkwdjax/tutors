@@ -6,10 +6,7 @@ import { pool } from '../../../lib/db'
 import { getBookingsByTutorIds, addBooking } from '@/src/services/booking.service';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const tutorIds = searchParams.getAll('tutorId').map(Number);
-  const res = await getBookingsByTutorIds(tutorIds);
-  return NextResponse.json(res)
+  return NextResponse.json({ message: 'GET method for bookings' });
 }
 
 export async function POST(request: Request) {

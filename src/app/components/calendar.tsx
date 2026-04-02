@@ -1,14 +1,19 @@
 'use client';
 
-import { memo, useEffect, useMemo, useState } from 'react';
-import { ScrollArea, Loader } from '@mantine/core';
+import { memo, useEffect, useMemo, useState, useCallback } from 'react';
+import { ScrollArea, Loader, Pill } from '@mantine/core';
 import { useAuth } from '../authProvider';
 import { StudentSlotModal } from '@/src/app/components/student-slot-modal';
 import { TutorSlotModal } from '@/src/app/components/tutor-slot-modal';
 
+import { Tutor } from '@/src/services/calendar.service';
+
 type CalendarSlot = {
   slotId?: number;
-  time: Date; 
+  tutor: Tutor;
+  time: string;
+  isBookedBy: number | null;
+  status: string | null;
 };
 
 const CalendarView = memo(function CalendarView() {
@@ -23,8 +28,9 @@ const CalendarView = memo(function CalendarView() {
   const [slots, setSlots] = useState<CalendarSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(true);
   const role = user?.role === 'student' || user?.role === 'tutor' ? user.role : undefined;
-  const [selectedSlot, setSelectedSlot] = useState<{ time: Date; isSlot: boolean; slotId?: number } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ time: Date; isSlot: boolean; slotId?: number; isBookedBy: number | null; status: string | null } | null>(null);
   const [studentModalOpened, setStudentModalOpened] = useState(false);
+  const [cancellationModalOpened, setCancellationModalOpened] = useState(false);
   const [tutorModalOpened, setTutorModalOpened] = useState(false);
 
   const closeModals = () => {
@@ -33,7 +39,21 @@ const CalendarView = memo(function CalendarView() {
     setSelectedSlot(null);
   };
 
-  const loadSlots = async () => {
+  const onBook = (slotId: number, studentId: number) => {
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ slotId, studentId }),
+    })
+    closeModals();
+    setTimeout(() => {
+      loadSlots(false);
+    }, 500);
+  }
+
+  const loadSlots = useCallback(async (showLoader = true) => {
     if (loading || !user) {
       if (!loading) {
         setSlotsLoading(false);
@@ -41,7 +61,9 @@ const CalendarView = memo(function CalendarView() {
       return;
     }
 
-    setSlotsLoading(true);
+    if (showLoader) {
+      setSlotsLoading(true);
+    }
     fetch('/api/calendar?tutorIds=' + (user.role === 'student' ? (user.tutorIds?.join(',') || '') : user.tutorId), {
       method: 'GET',
       headers: {
@@ -51,21 +73,33 @@ const CalendarView = memo(function CalendarView() {
       .then((res) => res.json())
       .then((data) => {
         setSlots(Array.isArray(data) ? data : data?.slots ?? []);
+        console.log('Fetched calendar slots:', data);
       })
       .catch((error) => {
         console.error('Error fetching calendar slots:', error);
       })
       .finally(() => {
-        setSlotsLoading(false);
+        if (showLoader) {
+          setSlotsLoading(false);
+        }
       });
-  };
+  }, [loading, user]);
 
   useEffect(() => {
     loadSlots();
   }, [loading, user]);
 
-  const slotTimeToIdMap = useMemo(() => {
-    const map = new Map<number, number>();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadSlots(false); // без лоадера
+      console.log('Auto-refreshed calendar slots');
+    }, 30000); // 30 секунд
+
+    return () => clearInterval(interval);
+  }, [loadSlots]);
+
+  const slotTimeToDataMap = useMemo(() => {
+    const map = new Map<number, CalendarSlot>();
 
     slots.forEach((slot) => {
       if (!slot?.time || slot.slotId == null) {
@@ -77,7 +111,7 @@ const CalendarView = memo(function CalendarView() {
         return;
       }
 
-      map.set(parsed, slot.slotId);
+      map.set(parsed, slot);
     });
 
     return map;
@@ -239,8 +273,14 @@ const CalendarView = memo(function CalendarView() {
                       slotDate.setUTCDate(slotDate.getUTCDate() + 1);
                       slotDate.setUTCHours(hour - MSK_OFFSET_HOURS, 0, 0, 0);
                       const slotTimestamp = slotDate.getTime();
-                      const slotId = slotTimeToIdMap.get(slotTimestamp);
+                      const slot = slotTimeToDataMap.get(slotTimestamp);
+                      const slotId = slot?.slotId;
                       const isSlot = slotId !== undefined;
+                      const tutor = slot?.tutor;
+                      const isBookedBy = slot?.isBookedBy ?? null;
+                      const status = slot?.status ?? null;
+                      const isPast = slotDate.getTime() < now.getTime();
+                      const isBookedByMe = isBookedBy !== null && user?.role === 'student' && isBookedBy === user?.studentId;
 
                       const mskDateTime = toMskIsoDateTime(slotDate);
                       const displayDateTime = cellDateTimeFormatter.format(slotDate);
@@ -256,7 +296,15 @@ const CalendarView = memo(function CalendarView() {
                               return;
                             }
 
-                            setSelectedSlot({ time: slotDate, isSlot, slotId });
+                            if (role === 'student' && isSlot && isBookedBy !== null && !isBookedByMe && !isPast) {
+                              return;
+                            }
+
+                            if (isSlot && isPast && !isBookedByMe) {
+                              return;
+                            }
+
+                            setSelectedSlot({ time: slotDate, isSlot, slotId, isBookedBy, status });
 
                             if (role === 'student') {
                               setStudentModalOpened(true);
@@ -269,10 +317,16 @@ const CalendarView = memo(function CalendarView() {
                           key={`${day}-${hour}`}
                           className={`h-14 border cursor-pointer border-slate-300 p-2 align-middle text-center ${
                             (() => {
-                                if (isSlot && user?.role === 'student') {
+                                if (isSlot && user?.role === 'student' && isBookedBy === null && !isPast) {
                                   return 'bg-amber-200 border-2 border-dotted text-black';
                               } else if (!isSlot && user?.role === 'student') {
                                   return 'bg-grey-200 text-gray-500';
+                              } else if (isSlot && user?.role === 'student' && isBookedByMe && status === 'confirmed') {
+                                  return 'bg-blue-300 border-2 border-dotted text-black';
+                              } else if (isSlot && user?.role === 'student' && isBookedByMe && status === 'cancelled') {
+                                  return 'bg-red-300 border-2 border-dotted text-black';
+                              } else if (isSlot && user?.role === 'student' && isBookedByMe && status === 'completed') {
+                                  return 'bg-green-300 border-2 border-dotted text-black';
                               } else if (isSlot && user?.role === 'tutor') {
                                   return 'bg-amber-200 border-2 border-dotted text-black';
                               } else {
@@ -282,6 +336,20 @@ const CalendarView = memo(function CalendarView() {
                           }`}
                         >
                           <time dateTime={mskDateTime}>{displayDateTime}</time>
+                          {(isBookedBy === null && !isPast) || (isBookedByMe) ? (
+                            <Pill.Group className='flex items-center justify-center mt-1'>
+                              {tutor && <Pill variant='default' className='' size='lg'>{tutor.publicName}</Pill>}
+                              {isBookedBy !== null && <Pill variant='contrast' className='' size='lg'>{(() => {
+                                if (status === 'confirmed') {
+                                  return 'Забронировано мной';
+                                } else if (status === 'cancelled') {
+                                  return 'Отменено';
+                                } else {
+                                  return 'Проведено';
+                                }
+                              })()}</Pill>}
+                            </Pill.Group>
+                          ) : null}
                         </td>
                       );
                     })}
@@ -297,7 +365,9 @@ const CalendarView = memo(function CalendarView() {
         opened={studentModalOpened}
         time={selectedSlot?.time}
         isSlot={selectedSlot?.isSlot ?? false}
+        isBookedBy={selectedSlot?.isBookedBy != null && selectedSlot.isBookedBy === user?.studentId}
         slotId={selectedSlot?.slotId}
+        onBook={onBook}
         onClose={closeModals}
       />
       <TutorSlotModal

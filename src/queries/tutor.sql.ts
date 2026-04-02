@@ -4,3 +4,9 @@ export const GET_SUBJECTS_BY_TUTOR_IDS = `
     JOIN subjects s ON s.subject_id = ts.subject_id
     WHERE ts.tutor_id = ANY($1::int[]);
 `;
+
+export const GET_TUTOR_PROFILE_BY_TUTOR_ID = `
+  SELECT tutor_id, public_name, bio
+    FROM tutors
+    WHERE tutor_id = $1;
+`;
