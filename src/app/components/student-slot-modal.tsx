@@ -46,7 +46,7 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
             : 'Слот не выбран'}
         </p>
         <Fieldset legend="Доп. информация">
-          <Textarea value={studentComment} onChange={(e) => setStudentComment(e.target.value)} label="Комментарий репетитору" placeholder="Что нужно знать репетитору?" /> {// TODO сделать чтобы комментарий можно было оставить и редактировать}
+          <Textarea value={studentComment} onChange={(e) => setStudentComment(e.target.value)} label="Комментарий репетитору" placeholder="Что нужно знать репетитору?" /> 
           <Textarea
             readOnly
             autosize
