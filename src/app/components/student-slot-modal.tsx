@@ -1,10 +1,11 @@
 'use client';
 
-import { Button, Modal } from '@mantine/core';
+import { Button, Modal, Fieldset, Textarea, FileInput } from '@mantine/core';
 import { useAuth } from '../authProvider';
 import { useState } from 'react';
 
 import { CancellationModal } from './cancellation-modal';
+import { Rubik } from 'next/font/google';
 
 type StudentSlotModalProps = {
   opened: boolean;
@@ -24,13 +25,20 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
 
   return (
     <div>
-    <Modal opened={opened} onClose={onClose} title='Забронировать слот'>
+    <Modal opened={opened} onClose={onClose} title={isBookedBy ? 'Моя запись' : 'Забронировать слот'}>
       <p className='mb-4 text-sm text-slate-800'>
         {time
-          ? `Вы выбрали слот на ${time.toLocaleString()}. Для бронирования свяжитесь с вашим репетитором.` // красиво вывести дату и время
+          ? `Вы выбрали слот на ${time.toLocaleString()}` // TODO: отформатировать дату и время более красиво
           : 'Слот не выбран'}
       </p>
-      {slotId != null && <p className='mb-4 text-sm text-slate-800'>ID слота: {slotId}</p>}
+      {!isBookedBy ? (
+        <>
+          <Fieldset legend="Информация для репетитора (необязательно)">
+            <Textarea label="Комментарий" placeholder="Что нужно знать репетитору?" />
+            <FileInput multiple label="Прикрепить файлы" placeholder="Выберите файлы" />
+          </Fieldset>
+        </>
+      ) : null}
       <div className='gap-2 flex flex-row justify-end'>
         <Button onClick={onClose} variant='light' color='yellow'>
           Закрыть
@@ -43,7 +51,7 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
         {isSlot && !isBookedBy && (
           <Button onClick={() => { if (onBook && slotId != null && studentId != null) onBook(slotId, studentId); }} variant='light' color='green'>
             Забронировать
-          </Button>
+          </Button> 
         )}
       </div>
     </Modal>
