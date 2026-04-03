@@ -5,7 +5,6 @@ import { useAuth } from '../authProvider';
 import { useState } from 'react';
 
 import { CancellationModal } from './cancellation-modal';
-import { Rubik } from 'next/font/google';
 
 type StudentSlotModalProps = {
   opened: boolean;
@@ -13,12 +12,13 @@ type StudentSlotModalProps = {
   slotId?: number;
   onClose: () => void;
   onDelete?: (slotId: number) => void;
-  onBook?: (slotId: number, studentId: number) => void;
+  onBook?: (slotId: number, studentId: number, comment: string) => void;
   isBookedBy: boolean;
   isSlot: boolean;
 };
 
 export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDelete, isBookedBy, isSlot }: StudentSlotModalProps) {
+  const [studentComment, setStudentComment] = useState('');
   const { user } = useAuth(); // Получаем studentId из контекста аутентификации
   const studentId = user?.role === 'student' ? user?.studentId : undefined;
   const [cancellationModalOpened, setCancellationModalOpened] = useState(false);
@@ -28,18 +28,17 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
     <Modal opened={opened} onClose={onClose} title={isBookedBy ? 'Моя запись' : 'Забронировать слот'}>
       <p className='mb-4 text-sm text-slate-800'>
         {time
-          ? `Вы выбрали слот на ${time.toLocaleString()}` // TODO: отформатировать дату и время более красиво
+          ? `Вы выбрали слот на ${time.toLocaleString()} по вашему локальному времени` // TODO: отформатировать дату и время более красиво
           : 'Слот не выбран'}
       </p>
       {!isBookedBy ? (
         <>
           <Fieldset legend="Информация для репетитора (необязательно)">
-            <Textarea label="Комментарий" placeholder="Что нужно знать репетитору?" />
-            <FileInput multiple label="Прикрепить файлы" placeholder="Выберите файлы" />
+            <Textarea value={studentComment} onChange={(e) => setStudentComment(e.target.value)} label="Комментарий" placeholder="Что нужно знать репетитору?" />
           </Fieldset>
         </>
       ) : null}
-      <div className='gap-2 flex flex-row justify-end'>
+      <div className='mt-2 gap-2 flex flex-row justify-end'>
         <Button onClick={onClose} variant='light' color='yellow'>
           Закрыть
         </Button>
@@ -49,7 +48,7 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
           </Button>
         )}
         {isSlot && !isBookedBy && (
-          <Button onClick={() => { if (onBook && slotId != null && studentId != null) onBook(slotId, studentId); }} variant='light' color='green'>
+          <Button onClick={() => { if (onBook && slotId != null && studentId != null) onBook(slotId, studentId, studentComment); }} variant='light' color='green'>
             Забронировать
           </Button> 
         )}

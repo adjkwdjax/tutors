@@ -1,10 +1,10 @@
 import { pool } from '../lib/db'; // путь поправь под свой проект
 import { ADD_BOOKING, GET_BOOKINGS_BY_TUTOR_IDS, CANCEL_BOOKING } from '../queries/bookings.sql';
 
-export async function addBooking(slotId: number, studentId: number) {
+export async function addBooking(slotId: number, studentId: number, comment: string) {
   const client = await pool.connect();
     try {
-        const res = await client.query(ADD_BOOKING, [slotId, studentId]);
+        const res = await client.query(ADD_BOOKING, [slotId, studentId, comment]);
         console.log('Booking added:', res.rows[0]);
         return res.rows[0];
     } catch (err) {

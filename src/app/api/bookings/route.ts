@@ -15,12 +15,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { slotId, studentId } = body;
+    const { slotId, studentId, comment } = body;
     if (!slotId || !studentId) {
       return NextResponse.json({ error: 'Missing slotId or studentId' }, { status: 400 });
     }
 
-    const newBooking = await addBooking(slotId, studentId);
+    const newBooking = await addBooking(slotId, studentId, comment);
     return NextResponse.json(newBooking, { status: 201 });
   } catch (error) {
     console.error('POST /api/bookings failed:', error);

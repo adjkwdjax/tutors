@@ -41,13 +41,13 @@ const CalendarView = memo(function CalendarView() {
     loadSlots(false);
   };
 
-  const onBook = (slotId: number, studentId: number) => {
+  const onBook = (slotId: number, studentId: number, comment: string) => {
     fetch('/api/bookings', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ slotId, studentId }),
+      body: JSON.stringify({ slotId, studentId, comment }),
     })
     closeModals();
     Notifications.show({ title: 'Бронирование', message: 'Слот успешно создан', color: 'green', autoClose: 4000, position: 'top-right' });

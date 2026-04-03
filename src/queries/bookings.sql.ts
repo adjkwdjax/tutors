@@ -1,6 +1,6 @@
 export const ADD_BOOKING = `
-  INSERT INTO bookings (booking_id, student_id, tutor_id)
-  SELECT s.slot_id, $2, s.tutor_id
+  INSERT INTO bookings (booking_id, student_id, tutor_id, comment_tutor)
+  SELECT s.slot_id, $2, s.tutor_id, $3
     FROM slots s
     WHERE s.slot_id = $1
   RETURNING booking_id AS slot_id, student_id, tutor_id, status, price, comment_tutor, comment_student;
