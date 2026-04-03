@@ -1,5 +1,5 @@
 export const ADD_BOOKING = `
-  INSERT INTO bookings (booking_id, student_id, tutor_id, comment_tutor)
+  INSERT INTO bookings (booking_id, student_id, tutor_id, comment_student)
   SELECT s.slot_id, $2, s.tutor_id, $3
     FROM slots s
     WHERE s.slot_id = $1
@@ -29,4 +29,10 @@ export const CANCEL_BOOKING = `
         END
     WHERE booking_id = $1
     RETURNING booking_id AS slot_id, student_id, tutor_id, status, price, comment_tutor, comment_student;
+`;
+
+export const GET_BOOKING_BY_ID = `
+  SELECT booking_id, student_id, tutor_id, status, price, comment_tutor, comment_student, cancellation_reason, cancelled_by_role, cancelled_by_student_id, cancelled_by_tutor_id, cancelled_at
+    FROM bookings
+    WHERE booking_id = $1
 `;

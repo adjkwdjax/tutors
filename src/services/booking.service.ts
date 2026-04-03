@@ -1,5 +1,5 @@
 import { pool } from '../lib/db'; // путь поправь под свой проект
-import { ADD_BOOKING, GET_BOOKINGS_BY_TUTOR_IDS, CANCEL_BOOKING } from '../queries/bookings.sql';
+import { ADD_BOOKING, GET_BOOKINGS_BY_TUTOR_IDS, CANCEL_BOOKING, GET_BOOKING_BY_ID } from '../queries/bookings.sql';
 
 export async function addBooking(slotId: number, studentId: number, comment: string) {
   const client = await pool.connect();
@@ -37,6 +37,20 @@ export async function cancelBooking(bookingId: number, cancellationReason: strin
         return res.rows[0];
     } catch (err) {
         console.error('Ошибка отмены бронирования:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+export async function getBookingById(bookingId: number) {
+    const client = await pool.connect();
+    try {
+        const res = await client.query(GET_BOOKING_BY_ID, [bookingId]);
+        console.log('Booking by ID:', res.rows[0]);
+        return res.rows[0];
+    } catch (err) {
+        console.error('Ошибка получения бронирования по ID:', err);
         throw err;
     } finally {
         client.release();
