@@ -36,3 +36,22 @@ export const GET_BOOKING_BY_ID = `
     FROM bookings
     WHERE booking_id = $1
 `;
+
+export const UPDATE_BOOKING_COMMENT = `
+  UPDATE bookings
+    SET comment_student = CASE
+          WHEN $3::user_role = 'student'::user_role THEN $1
+          ELSE comment_student
+        END,
+        comment_tutor = CASE
+          WHEN $3::user_role = 'tutor'::user_role THEN $1
+          ELSE comment_tutor
+        END
+    WHERE booking_id = $2
+      AND (
+        ($3::user_role = 'student'::user_role AND student_id = $4)
+        OR
+        ($3::user_role = 'tutor'::user_role AND tutor_id = $4)
+      )
+    RETURNING booking_id AS slot_id, student_id, tutor_id, status, price, comment_tutor, comment_student;
+`;

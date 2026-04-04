@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useEffect, useMemo, useState, useCallback } from 'react';
-import { ScrollArea, Loader, Pill } from '@mantine/core';
+import { ScrollArea, Loader, Pill, Badge } from '@mantine/core';
 import { useAuth } from '../authProvider';
 import { StudentSlotModal } from '@/src/app/components/student-slot-modal';
 import { TutorSlotModal } from '@/src/app/components/tutor-slot-modal';
@@ -338,7 +338,8 @@ const CalendarView = memo(function CalendarView() {
                             })()
                           }`}
                         >
-                          <time dateTime={mskDateTime}>{displayDateTime}</time>
+                          <time className='mr-2' dateTime={mskDateTime}>{displayDateTime}</time>
+                          {status === 'completed' && <Badge color="red" variant="filled">Не оплачено</Badge>}
                           {(isBookedBy === null && !isPast) || (isBookedByMe) ? (
                             <Pill.Group className='flex items-center justify-center mt-1'>
                               {tutor && <Pill variant='default' className='' size='lg'>{tutor.publicName}</Pill>}
@@ -371,6 +372,7 @@ const CalendarView = memo(function CalendarView() {
         isBookedBy={selectedSlot?.isBookedBy != null && selectedSlot.isBookedBy === user?.studentId}
         slotId={selectedSlot?.slotId}
         onBook={onBook}
+        status={selectedSlot?.status ?? ''}
         onClose={closeModals}
       />
       <TutorSlotModal
