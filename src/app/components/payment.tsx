@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Stack, Text } from '@mantine/core';
+import { Alert, Button, Card, Stack, Text, Pill } from '@mantine/core';
 
 export default function Payment() {
 	return (

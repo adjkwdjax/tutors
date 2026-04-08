@@ -32,9 +32,25 @@ export const CANCEL_BOOKING = `
 `;
 
 export const GET_BOOKING_BY_ID = `
-  SELECT booking_id, student_id, tutor_id, status, price, comment_tutor, comment_student, cancellation_reason, cancelled_by_role, cancelled_by_student_id, cancelled_by_tutor_id, cancelled_at
-    FROM bookings
-    WHERE booking_id = $1
+  SELECT b.booking_id,
+         b.student_id,
+         b.tutor_id,
+         b.status,
+         b.price,
+         b.comment_tutor,
+         b.comment_student,
+         b.cancellation_reason,
+         b.cancelled_by_role,
+         b.cancelled_by_student_id,
+         b.cancelled_by_tutor_id,
+         b.cancelled_at,
+         ts.board_link,
+         ts.call_link
+    FROM bookings b
+    LEFT JOIN tutor_students ts
+      ON ts.student_id = b.student_id
+     AND ts.tutor_id = b.tutor_id
+    WHERE b.booking_id = $1
 `;
 
 export const UPDATE_BOOKING_COMMENT = `
@@ -54,4 +70,13 @@ export const UPDATE_BOOKING_COMMENT = `
         ($3::user_role = 'tutor'::user_role AND tutor_id = $4)
       )
     RETURNING booking_id AS slot_id, student_id, tutor_id, status, price, comment_tutor, comment_student;
+`;
+
+export const GET_PREVIOUS_BOOKINGS_BY_STUDENT_ID = `
+  SELECT b.booking_id AS slot_id, b.student_id, b.tutor_id, b.status, b.price, b.comment_tutor, b.comment_student, t.public_name AS tutor_public_name
+    FROM bookings b
+    LEFT JOIN tutors t ON b.tutor_id = t.tutor_id
+    WHERE b.student_id = $1
+      AND b.status IN ('completed'::booking_status, 'cancelled'::booking_status)
+    ORDER BY b.booking_id DESC
 `;

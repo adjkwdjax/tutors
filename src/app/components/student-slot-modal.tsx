@@ -1,9 +1,10 @@
 'use client';
 
-import { Button, Modal, Fieldset, Textarea, FileInput, Alert } from '@mantine/core';
+import { Button, Modal, Fieldset, Textarea, Alert, CopyButton, Tooltip, ActionIcon } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { useAuth } from '../authProvider';
 import { useEffect, useState } from 'react';
+import { CopyIcon, CheckIcon } from '@phosphor-icons/react';
 import Payment from './payment';
 
 import { CancellationModal } from './cancellation-modal';
@@ -18,14 +19,27 @@ type StudentSlotModalProps = {
   isBookedBy: boolean;
   isSlot: boolean;
   status: string;
+  boardLink?: string;
+  callLink?: string;
 };
 
 export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDelete, isBookedBy, isSlot, status }: StudentSlotModalProps) {
   const [studentComment, setStudentComment] = useState('');
   const [tutorComment, setTutorComment] = useState('');
+  const [boardLink, setBoardLink] = useState('');
+  const [callLink, setCallLink] = useState('');
   const { user } = useAuth(); // Получаем studentId из контекста аутентификации
   const studentId = user?.role === 'student' ? user?.studentId : undefined;
   const [cancellationModalOpened, setCancellationModalOpened] = useState(false);
+
+  useEffect(() => {
+    if (!opened) {
+      setStudentComment('');
+      setTutorComment('');
+      setBoardLink('');
+      setCallLink('');
+    }
+  }, [opened]);
 
   const onSaveStudentComment = async (comment: string) => {
     if (slotId == null) {
@@ -94,8 +108,23 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
     })
       .then((response) => response.json())
       .then((data) => {
+        if (data.message === 'Booking not found') {
+          setStudentComment('');
+          setTutorComment('');
+          Notifications.show({
+            title: 'Ошибка',
+            message: 'Информация о записи не найдена',
+            color: 'red',
+            autoClose: 5000,
+            position: 'top-right',
+          });
+
+          return;
+        }
         setStudentComment(data.comment_student || '');
         setTutorComment(data.comment_tutor || '');
+        setBoardLink(data.board_link || '');
+        setCallLink(data.call_link || '');
       });
   }, [slotId, isBookedBy]);
 
@@ -126,7 +155,7 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
       <Modal opened={opened} onClose={onClose} title='Моя запись'>
         <p className='mb-4 text-sm text-slate-800'>
           {time
-            ? `Вы выбрали слот на ${time.toLocaleString()} по вашему локальному времени ${status}` // TODO: отформатировать дату и время более красиво
+            ? `Вы выбрали слот на ${time.toLocaleString()} по вашему локальному времени` // TODO: отформатировать дату и время более красиво
             : 'Слот не выбран'}
         </p>
         <Fieldset legend="Доп. информация">
@@ -138,6 +167,41 @@ export function StudentSlotModal({ opened, time, slotId, onClose, onBook, onDele
             label="Комментарий от репетитора"
             placeholder="Репетитор не оставил комментарий"
           />
+          <Textarea
+          rightSection={callLink && <CopyButton value={callLink} timeout={2000}>
+              {({ copied, copy }) => (
+                <Tooltip label={copied ? 'Скопировано' : 'Копировать'} withArrow position="right">
+                  <ActionIcon color={copied ? 'teal' : 'gray'} variant="subtle" onClick={copy}>
+                    {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </CopyButton>
+            }
+            readOnly
+            autosize
+            value={callLink || ''}
+            label="Ссылка на звонок"
+            placeholder="Репетитор не предоставил ссылку на звонок"
+            />
+          <Textarea
+          rightSection={boardLink && <CopyButton value={boardLink} timeout={2000}>
+              {({ copied, copy }) => (
+                <Tooltip label={copied ? 'Скопировано' : 'Копировать'} withArrow position="right">
+                  <ActionIcon color={copied ? 'teal' : 'gray'} variant="subtle" onClick={copy}>
+                    {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </CopyButton>
+            }
+            readOnly
+            autosize
+            value={boardLink || ''}
+            label="Ссылка на доску"
+            placeholder="Репетитор не предоставил ссылку на доску"
+          />
+
         </Fieldset>
         <div className='mt-2 gap-2 flex flex-row justify-end'>
           <Button onClick={() => { if (slotId != null) setCancellationModalOpened(true); }} variant='light' color='red'>

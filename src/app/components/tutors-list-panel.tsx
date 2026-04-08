@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Avatar, Grid } from '@mantine/core';
+import { Avatar, Grid, Checkbox } from '@mantine/core';
 import { useAuth } from '../authProvider';
 
 type TutorProfile = {
@@ -76,12 +76,13 @@ export default function TutorsListPanelView() {
                   {tutor.public_name.substring(0, 3).toUpperCase()}
                 </Avatar>
                 <h3 className="font-semibold">{tutor.public_name}</h3>
+
               </Grid.Col>
             ))}
           </Grid>
         )
       ) : (
-        <p className="text-center text-muted-foreground">No tutor assigned.</p>
+        <p className="text-center text-muted-foreground">К вам пока что не прикреплен ни один репетитор, ожидайте.</p>
       )}
 
     </div>

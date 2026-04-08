@@ -17,6 +17,7 @@
     "@mantine/modals": "^8.3.17",
     "@mantine/notifications": "^8.3.17",
     "@mantine/tiptap": "^8.3.17",
+    "@phosphor-icons/react": "^2.1.10",
     "@tiptap/extension-link": "^3.20.2",
     "@tiptap/pm": "^3.20.2",
     "@tiptap/react": "^3.20.2",
